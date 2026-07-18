@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Requests
+from fastapi import FastAPI, Request
 from pydantic import BaseModel
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 import torch
@@ -68,3 +68,14 @@ def summarize_dialogue(dialogue : str):
     #token ids to summary ==> decoding
     summary = tokenizer.decode(targets[0],skip_special_tokens=True) #EOS, SEP
     return summary
+
+
+#API endpoints
+@app.post("/summarize/")
+async def summarize(dialogue_input :DialogueInput):
+    summarize_dialogue(dialogue_input.dialogue)
+    return {"summary": summary}
+
+@app.get("/", response_class = HTMLResponse)
+async def home(request: Request):
+    return templates.TemplateResponse("index.html",{"request": request})
