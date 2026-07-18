@@ -23,3 +23,48 @@ elif torch.cuda.is_available():
 else: 
     device = torch.device("cpu")
 model.to(device)
+
+
+#templating
+templates = Jinja2Templates(directory=".")
+
+#Input schema for dialogue ==> string
+class DialogueInput(BaseModel):
+    dialogue: str
+
+def clean_data(text):
+    text = re.sub(r"\r\n"," ",text) #lines
+    text = re.sub(r"\s+"," ",text) #spaces
+    text = re.sub(r"<.*?>"," ",text) #tags
+    text = text.strip().lower()
+    return text
+
+
+
+#summarize dialogue
+def summarize_dialogue(dialogue : str):
+    dialogue = clean_data(dialogue) #clean dialogue
+
+    #tokenize
+    inputs = tokenizer(
+        dialogue,
+        padding = "max_length",
+        max_length = 512,
+        truncation = True,
+        return_tensors = "pt"
+    )
+
+    #generate summary ( token ids)
+    model.to(device)
+    targets = model.generate(
+        input_ids = inputs["input_ids"],
+        attention_mask = inputs["attention_mask"],
+        max_length = 150,
+        num_beams=4 ,# transformer compare 4 output to give best summary
+        early_stopping = True
+
+    )
+
+    #token ids to summary ==> decoding
+    summary = tokenizer.decode(targets[0],skip_special_tokens=True) #EOS, SEP
+    return summary
