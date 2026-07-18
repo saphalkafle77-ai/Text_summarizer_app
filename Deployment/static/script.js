@@ -7,7 +7,7 @@ document.getElementById("summarization-form").addEventListener("submit",async(e)
     const summaryText = document.getElementById("summary-text");
     const submitButton = e.target.querySelector("button");
 
-    const dialogue = dialogueInput.ariaValueMax.trim();
+    const dialogue = dialogueInput.value.trim();
     if(!dialogue) return;
 
     //show processing message and disable button
@@ -16,7 +16,7 @@ document.getElementById("summarization-form").addEventListener("submit",async(e)
 
     try{
         // send dialogue to backend for runtime error
-        const response = await fetch("/summarize", {
+        const response = await fetch("/summarize/", {
             method:"POST",
             headers: {
                 "Content-Type": "application/json" },

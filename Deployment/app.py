@@ -3,16 +3,23 @@ from pydantic import BaseModel
 from transformers import T5ForConditionalGeneration, T5Tokenizer
 import torch
 import re
-from fastapi.templates import Jinja2Templates  #UI
+from fastapi.templating import Jinja2Templates  #UI
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
+
+
 
 #Initalize our fastapi app
 app = FastAPI(title="Text Summarizeer App", description="Here you can summarize any long conversation or dialogue",version="1.0")
 
+
+#templating
+templates = Jinja2Templates(directory = "templates")
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 #model and tokenizer import 
-model = T5ForConditionalGeneration.from_pretrained("./saved_summary_model")
-tokenizer = T5Tokenizer.from_pretrained("./saved_summary_model")
+model = T5ForConditionalGeneration.from_pretrained("../saved_summary_model")
+tokenizer = T5Tokenizer.from_pretrained("../saved_summary_model")
 
 #device 
 
@@ -26,7 +33,7 @@ model.to(device)
 
 
 #templating
-templates = Jinja2Templates(directory=".")
+# templates = Jinja2Templates(directory=".")
 
 #Input schema for dialogue ==> string
 class DialogueInput(BaseModel):
@@ -73,9 +80,11 @@ def summarize_dialogue(dialogue : str):
 #API endpoints
 @app.post("/summarize/")
 async def summarize(dialogue_input :DialogueInput):
-    summarize_dialogue(dialogue_input.dialogue)
+    summary = summarize_dialogue(dialogue_input.dialogue)
     return {"summary": summary}
 
 @app.get("/", response_class = HTMLResponse)
 async def home(request: Request):
-    return templates.TemplateResponse("index.html",{"request": request})
+    return templates.TemplateResponse(request=request,
+        name="index.html",
+        context={"request": request})
