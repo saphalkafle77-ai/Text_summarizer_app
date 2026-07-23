@@ -1,0 +1,1 @@
+Text summarizer where you can enter dialogue and context to get summary of the content
